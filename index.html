@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MZ-Slang AI Dictionary</title>
+    <title> 모두이음-신조어 사전 </title>
     <style>
         :root {
             --primary-dark: #003060;
@@ -247,63 +247,49 @@
 
     function nextWord() { currentIndex = (currentIndex + 1) % slangDB[currentAge].length; updateUI(); }
     function prevWord() { currentIndex = (currentIndex - 1 + slangDB[currentAge].length) % slangDB[currentAge].length; updateUI(); }
-
-    /* --- GEMINI API INTEGRATION --- */
- /* --- GEMINI API + FIRESTORE 통합 검색 --- */
+/* --- FIRESTORE 데이터베이스 검색 (Gemini 호출 제거됨) --- */
     async function searchSlang(word) {
         if (!word) return;
         const loading = document.getElementById('loading');
-        loading.style.display = 'block';
         
+        // 로딩 문구 변경 (Gemini 관련 내용 삭제)
+        loading.innerText = "데이터베이스에서 찾는 중...";
+        loading.style.display = 'block';
+
         try {
-            // 1. Firestore DB에서 일치하는 단어가 있는지 검색
-            const snapshot = await db.collection('slangs').where('word', '==', word).get();
+            // 1. Firestore 'slangs' 컬렉션에서 단어 검색
+            const snapshot = await db.collection('slangs')
+                                   .where('word', '==', word)
+                                   .get();
 
             if (!snapshot.empty) {
-                // 2. DB에 데이터가 있으면 해당 문서를 바로 표시
+                // 2. DB에 데이터가 있는 경우
                 const data = snapshot.docs[0].data();
                 displayResult(word, data.mean, data.example);
-                console.log("Firestore DB에서 정보를 찾았습니다.");
+                console.log("DB에서 단어를 찾았습니다.");
             } else {
-                // 3. DB에 없으면 Gemini AI에게 요청
-                console.log("DB에 데이터가 없어 Gemini AI를 호출합니다.");
-                await fetchFromGemini(word); 
+                // 3. DB에 데이터가 없는 경우
+                alert(`'${word}'은(는) 아직 등록되지 않은 단어입니다. 제보해 주세요!`);
             }
-        } catch (e) {
-            console.error("검색 중 오류 발생:", e);
+        } catch (error) {
+            console.error("데이터 조회 중 오류 발생:", error);
+            alert("서버 연결에 실패했습니다.");
         } finally {
             loading.style.display = 'none';
         }
     }
 
-    // 화면 업데이트를 담당하는 보조 함수
+    // 결과 화면 표시 함수
     function displayResult(word, mean, example) {
         const card = document.getElementById('mainCard');
-        card.classList.remove('is-flipped'); // 카드 앞면으로 초기화
+        card.classList.remove('is-flipped');
         setTimeout(() => {
             document.getElementById('wordDisplay').innerText = word;
             document.getElementById('meanDisplay').innerText = mean;
             document.getElementById('exDisplay').innerText = example;
         }, 200);
     }
-
-    // Gemini API 호출 로직 분리
-    async function fetchFromGemini(word) {
-        const prompt = `신조어 '${word}'의 뜻과 예시를 10대 말투로 알려줘. { "mean": "...", "example": "..." } 형식의 JSON으로만 답해.`;
-        const resp = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-        });
-        const resData = await resp.json();
-        const cleanJson = resData.candidates[0].content.parts[0].text.replace(/```json|```/g, '');
-        const result = JSON.parse(cleanJson);
-        
-        // 결과 표시 및 로컬 리스트(slangDB) 업데이트
-        displayResult(word, result.mean, result.example);
-        slangDB[currentAge].unshift({ word, mean: result.mean, example: result.example });
-    }
-
+    
     document.getElementById('searchInput').addEventListener('keypress', e => {
         if (e.key === 'Enter') { searchSlang(e.target.value); e.target.value = ''; }
     });
