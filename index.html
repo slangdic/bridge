@@ -2,102 +2,175 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>모두이음-신조어 사전</title>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <style>
         :root {
-            --primary-main: #055C9D;
-            --primary-accent: #0E86D4;
-            --bg-light: #F0F8FF;
+            --primary-main: rgba(0, 122, 255, 0.9);
+            --bg-light: #FFFFFF;
+            --glass-bg: rgba(255, 255, 255, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.3);
+            --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+            --text-color: #000000;
         }
 
         body {
             margin: 0;
-            font-family: 'Pretendard', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
             background-color: var(--bg-light);
+            color: var(--text-color);
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
-        .header {
-            padding: 40px 20px;
+        /* 1. 모두이음 타이틀: 박스와 배경 제거, 크기 확대 */
+        .header-section {
+            margin-top: 25vh;
             text-align: center;
+            background: none;
+            border: none;
+            box-shadow: none;
+            backdrop-filter: none;
         }
 
+        .header-section h1 {
+            margin: 0;
+            font-size: 4rem; /* 글씨 크기 대폭 확대 */
+            font-weight: 800;
+            letter-spacing: -0.05em;
+            color: var(--text-color);
+            /* 약간의 리퀴드 질감을 위한 그라데이션 (선택사항) */
+            background: linear-gradient(180deg, #000 60%, #666 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 2. 하단 검색창: 리퀴드 글래스 유지 */
         .search-container {
-            width: 90%;
+            position: fixed;
+            bottom: 40px;
+            width: 85%;
             max-width: 500px;
             display: flex;
             gap: 10px;
-            margin-bottom: 30px;
+            padding: 12px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
+            z-index: 100;
         }
 
         input {
             flex: 1;
-            padding: 15px;
-            border: 2px solid var(--primary-main);
-            border-radius: 12px;
-            font-size: 1rem;
+            padding: 16px;
+            border: none;
+            border-radius: 18px;
+            font-size: 1.1rem;
+            background: rgba(255,255,255,0.5);
+            outline: none;
         }
 
         button {
-            padding: 15px 25px;
+            padding: 16px 24px;
             background: var(--primary-main);
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: 18px;
             cursor: pointer;
-            font-weight: bold;
+            font-weight: 600;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .card {
-            width: 90%;
-            max-width: 500px;
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        /* 3. 결과 팝업: 리퀴드 글래스 유지 */
+        .popup-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-overlay.show { display: flex; }
+
+        .popup-card {
+            width: 80%;
+            max-width: 400px;
+            padding: 40px 20px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-radius: 35px;
+            border: 1px solid var(--glass-border);
+            box-shadow: var(--glass-shadow);
             text-align: center;
+            position: relative;
         }
 
         #wordDisplay {
-            font-size: 2rem;
-            color: var(--primary-main);
-            margin-bottom: 20px;
+            font-size: 2.2rem;
             font-weight: 800;
+            margin-bottom: 15px;
+            color: var(--primary-main);
         }
 
         #meanDisplay {
-            font-size: 1.1rem;
-            line-height: 1.6;
+            font-size: 1.2rem;
+            line-height: 1.5;
             color: #333;
-            word-break: keep-all;
+        }
+
+        .close-popup {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5rem;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            .header-section h1 { font-size: 3rem; }
+            .search-container { bottom: 30px; }
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>모두이음-신조어 사전</h1>
-        <p>요즘 유행하는 단어, 바로 검색해보세요!</p>
+    <div class="header-section">
+        <h1>모두이음</h1>
     </div>
 
     <div class="search-container">
-        <input type="text" id="searchInput" placeholder="단어를 입력하세요..." onkeypress="if(event.keyCode==13) searchSlang(this.value)">
-        <button onclick="searchSlang(document.getElementById('searchInput').value)">검색</button>
+        <input type="text" id="searchInput" placeholder="단어 검색" onkeypress="if(event.key==='Enter')handleSearch()">
+        <button onclick="handleSearch()">검색</button>
     </div>
 
-    <div class="card" id="mainCard">
-        <div id="wordDisplay">준비 완료!</div>
-        <div id="meanDisplay">검색창에 궁금한 단어를 입력해 보세요.</div>
+    <div class="popup-overlay" id="popupOverlay" onclick="if(event.target===this)closePopup()">
+        <div class="popup-card">
+            <button class="close-popup" onclick="closePopup()">&times;</button>
+            <div id="wordDisplay"></div>
+            <div id="meanDisplay"></div>
+        </div>
     </div>
 
     <script>
-        // Firebase 설정 (기존 사용자님의 키 정보를 입력하세요)
+        // Firebase 설정 (실제 사용자의 키를 입력하세요)
         const firebaseConfig = {
             apiKey: "YOUR_API_KEY",
             authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
@@ -107,37 +180,37 @@
             appId: "YOUR_APP_ID"
         };
 
-        if (!firebase.apps.length) {
-            firebase.initializeApp(firebaseConfig);
-        }
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        async function searchSlang(word) {
-            if (!word.trim()) return;
+        async function handleSearch() {
+            const input = document.getElementById('searchInput');
+            const word = input.value.trim();
+            if (!word) return;
+
+            input.blur(); 
 
             try {
-                // 컬렉션 이름을 'slangs'로 지정
-                const snapshot = await db.collection('slangs')
-                                       .where('word', '==', word.trim())
-                                       .get();
-
+                const snapshot = await db.collection('slangs').where('word', '==', word).get();
                 if (!snapshot.empty) {
                     const data = snapshot.docs[0].data();
-                    displayResult(data.word, data.mean);
+                    showPopup(data.word, data.mean);
                 } else {
-                    // 데이터가 없을 때만 알림
-                    alert(`'${word}'은(는) 아직 등록되지 않은 단어입니다.`);
+                    showPopup(word, "미등록 단어입니다.");
                 }
-            } catch (error) {
-                // [수정] "데이터를 가져오는 중..." 알림창 삭제하여 조용히 처리
-                console.error("데이터 조회 오류:", error);
+            } catch (e) {
+                console.error(e);
             }
         }
 
-        function displayResult(word, mean) {
-            // [수정] 지연 시간(setTimeout)과 opacity 제거하여 즉시 출력 (화면 흔들림 방지)
+        function showPopup(word, mean) {
             document.getElementById('wordDisplay').innerText = word;
             document.getElementById('meanDisplay').innerText = mean;
+            document.getElementById('popupOverlay').classList.add('show');
+        }
+
+        function closePopup() {
+            document.getElementById('popupOverlay').classList.remove('show');
         }
     </script>
 </body>
