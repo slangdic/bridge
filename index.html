@@ -28,7 +28,6 @@
             overflow-x: hidden;
         }
 
-        /* 1. 모두이음 타이틀: 박스와 배경 제거, 크기 확대 */
         .header-section {
             margin-top: 25vh;
             text-align: center;
@@ -40,17 +39,15 @@
 
         .header-section h1 {
             margin: 0;
-            font-size: 4rem; /* 글씨 크기 대폭 확대 */
+            font-size: 4rem;
             font-weight: 800;
             letter-spacing: -0.05em;
             color: var(--text-color);
-            /* 약간의 리퀴드 질감을 위한 그라데이션 (선택사항) */
             background: linear-gradient(180deg, #000 60%, #666 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        /* 2. 하단 검색창: 리퀴드 글래스 유지 */
         .search-container {
             position: fixed;
             bottom: 40px;
@@ -89,7 +86,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* 3. 결과 팝업: 리퀴드 글래스 유지 */
         .popup-overlay {
             display: none;
             position: fixed;
@@ -157,61 +153,4 @@
     </div>
 
     <div class="search-container">
-        <input type="text" id="searchInput" placeholder="단어 검색" onkeypress="if(event.key==='Enter')handleSearch()">
-        <button onclick="handleSearch()">검색</button>
-    </div>
-
-    <div class="popup-overlay" id="popupOverlay" onclick="if(event.target===this)closePopup()">
-        <div class="popup-card">
-            <button class="close-popup" onclick="closePopup()">&times;</button>
-            <div id="wordDisplay"></div>
-            <div id="meanDisplay"></div>
-        </div>
-    </div>
-
-    <script>
-        // Firebase 설정 (실제 사용자의 키를 입력하세요)
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT_ID.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        async function handleSearch() {
-            const input = document.getElementById('searchInput');
-            const word = input.value.trim();
-            if (!word) return;
-
-            input.blur(); 
-
-            try {
-                const snapshot = await db.collection('slangs').where('word', '==', word).get();
-                if (!snapshot.empty) {
-                    const data = snapshot.docs[0].data();
-                    showPopup(data.word, data.mean);
-                } else {
-                    showPopup(word, "미등록 단어입니다.");
-                }
-            } catch (e) {
-                console.error(e);
-            }
-        }
-
-        function showPopup(word, mean) {
-            document.getElementById('wordDisplay').innerText = word;
-            document.getElementById('meanDisplay').innerText = mean;
-            document.getElementById('popupOverlay').classList.add('show');
-        }
-
-        function closePopup() {
-            document.getElementById('popupOverlay').classList.remove('show');
-        }
-    </script>
-</body>
-</html>
+        <input type="text" id="searchInput" placeholder="단어 검색" onkeypress="if(event
