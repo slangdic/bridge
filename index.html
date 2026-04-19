@@ -1,52 +1,45 @@
 <!DOCTYPE html>
 <html lang="ko">
-<!DOCTYPE html>
-<html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
     <title>A사전</title>
-
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><polygon points='50,10 90,80 10,80' fill='black'/></svg>">
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' fill='white'/><polygon points='50,15 85,85 15,85' fill='black'/></svg>">
-    
-    <meta name="description" content="신조어사전, 신조어, 신조어 사전 정보를 제공하는 A사전입니다.">
-    <meta name="keywords" content="신조어사전, 신조어, 신조어 사전">
-    <meta name="robots" content="index, follow">
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     
     <style>
-        /* ... 이후 기존 CSS 코드 동일 ... */
-</head>
         :root {
-            --primary-blue: #000000;
-            --glass-bg: rgba(255, 255, 255, 0.95);
+            --black: #000000;
             --glass-border: rgba(0, 0, 0, 0.15);
             --glass-shadow: 0 20px 50px 0 rgba(0, 0, 0, 0.05);
-            --black: #000000;
         }
 
-        * { box-sizing: border-box; }
+        /* 기본 설정: 스크롤 차단 및 검은색 글자 */
+        * { 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent; 
+            color: var(--black);
+        }
 
-        /* 상하좌우 스크롤 금지 설정 */
         html, body {
             margin: 0;
             padding: 0;
             width: 100%;
             height: 100%;
-            overflow: hidden; /* 스크롤 차단 */
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Pretendard", sans-serif;
+            height: 100dvh; /* 사파리 높이 대응 */
+            overflow: hidden; /* 상하좌우 스크롤 금지 */
             background-color: #FFFFFF;
-            color: var(--black);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
         }
 
         body {
             display: flex;
             justify-content: center;
-            align-items: center;
+            align-items: center; /* 수직 중앙 정렬 */
         }
 
         .app-container {
@@ -56,89 +49,66 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
+            justify-content: center; /* 중앙 정렬 */
             padding: 20px;
-            text-align: center;
         }
 
         .header-section {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 15px;
+            margin-bottom: 40px;
         }
 
-        .header-section svg {
-            width: 50px;
-            height: 50px;
-            display: block;
-        }
-
+        .header-section svg { width: 50px; height: 50px; }
         .header-section h1 {
             margin: 0;
             font-size: 3.5rem;
             font-weight: 800;
             letter-spacing: -0.05em;
-            color: var(--black);
-            line-height: 50px;
         }
 
+        /* 검색 구역 */
         .search-area {
             width: 100%;
-            margin-bottom: 30px;
+            max-width: 800px;
+            margin-bottom: 40px;
             position: relative;
         }
 
-        .search-bar {
-            display: flex;
-            width: 100%;
-        }
+        .search-bar { display: flex; width: 100%; }
 
         input {
             flex: 1;
-            padding: 20px 30px;
+            padding: 22px;
             border: 2px solid #EEEEEE;
             border-radius: 20px;
-            font-size: 1.4rem;
+            font-size: 1.3rem;
             background: #FAFAFA;
             outline: none;
-            color: var(--black);
-            transition: all 0.3s ease;
-            text-align: center; /* 버튼이 없으므로 중앙 정렬이 깔끔함 */
+            text-align: center;
+            -webkit-appearance: none;
         }
 
-        input:focus {
-            border-color: var(--black);
-            background: #FFFFFF;
-        }
+        input:focus { border-color: var(--black); background: #FFFFFF; }
 
-        /* 데스크톱에서만 돋보기 버튼 표시, 모바일은 삭제 */
+        /* 데스크톱용 검색 버튼 */
         button#searchButton {
-            padding: 0 35px;
+            padding: 0 30px;
             background: var(--black);
-            color: white;
+            color: white !important;
             border: none;
             border-radius: 20px;
             cursor: pointer;
+            margin-left: 10px;
             display: flex;
             align-items: center;
-            justify-content: center;
-            margin-left: 15px;
+            font-size: 1.5rem;
         }
+        button#searchButton span { color: white !important; }
 
-        @media (max-width: 1024px) {
-            button#searchButton {
-                display: none; /* 모바일 환경 검색 버튼 삭제 */
-            }
-            .random-section {
-                flex-direction: column;
-                gap: 15px;
-            }
-            .header-section h1 { font-size: 2.5rem; }
-            .random-card { padding: 30px 20px !important; }
-        }
-
+        /* 랜덤 신조어 구역 가로 정렬 */
         .random-section {
             width: 100%;
             display: flex;
@@ -156,28 +126,18 @@
             box-shadow: var(--glass-shadow);
         }
 
-        .random-card .word {
-            font-size: 1.8rem;
-            font-weight: 800;
-            color: var(--black);
-            margin-bottom: 15px;
-        }
+        .random-card .word { font-size: 2rem; font-weight: 800; margin-bottom: 15px; }
+        .random-card .mean { font-size: 1.2rem; line-height: 1.6; margin: 0; }
 
-        .random-card .mean {
-            font-size: 1.2rem;
-            color: var(--black);
-            line-height: 1.5;
-            margin: 0;
-        }
-
-        /* 팝업 설정 */
+        /* 검색 결과 팝업 */
         .result-popup {
             position: absolute;
             top: 110%;
             left: 0;
             right: 0;
-            background: var(--glass-bg);
-            backdrop-filter: blur(30px);
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
             max-height: 250px;
@@ -186,43 +146,58 @@
             z-index: 1000;
         }
 
-        .result-item {
-            padding: 18px 25px;
-            text-align: left;
-            cursor: pointer;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
-            font-size: 1.2rem;
-            color: var(--black);
-        }
+        .result-item { padding: 18px; border-bottom: 1px solid #F5F5F5; cursor: pointer; text-align: left; }
 
+        /* 상세 화면 오버레이 */
         .overlay {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.1);
-            backdrop-filter: blur(25px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             z-index: 2000;
             justify-content: center;
             align-items: center;
         }
-
         .overlay.show { display: flex; }
 
         .detail-card {
             width: 85%;
             max-width: 600px;
-            padding: 60px 40px;
+            padding: 70px 40px;
             background: #FFFFFF;
-            border-radius: 40px;
+            border-radius: 45px;
             border: 1px solid var(--glass-border);
             position: relative;
             text-align: center;
         }
 
-        #detailWord { font-size: 3rem; font-weight: 800; color: var(--black); margin-bottom: 25px; }
-        #detailMean { font-size: 1.5rem; color: var(--black); line-height: 1.6; }
-        .close-btn { position: absolute; top: 25px; right: 30px; font-size: 3rem; border: none; background: none; color: #000; cursor: pointer; }
+        #detailWord { font-size: 3rem; font-weight: 800; margin-bottom: 25px; }
+        #detailMean { font-size: 1.5rem; line-height: 1.7; }
+        
+        /* 종료 버튼 (먹통 해결을 위해 영역 확대 및 스타일 수정) */
+        .close-btn { 
+            position: absolute; 
+            top: 20px; 
+            right: 25px; 
+            font-size: 3.5rem; 
+            border: none; 
+            background: none; 
+            cursor: pointer;
+            line-height: 1;
+            padding: 10px;
+            z-index: 2100;
+        }
 
+        /* 모바일 최적화 */
+        @media (max-width: 1024px) {
+            button#searchButton { display: none; } /* 모바일 버튼 삭제 */
+            .random-section { flex-direction: column; gap: 15px; }
+            .header-section h1 { font-size: 2.5rem; }
+            .random-card { padding: 35px 20px; }
+            .app-container { justify-content: center; }
+        }
     </style>
 </head>
 <body>
@@ -236,12 +211,12 @@
         </header>
 
         <div class="search-area">
-            <div class="search-bar">
-                <input type="text" id="searchInput" placeholder="단어를 입력하고 완료를 누르세요" oninput="handleLiveSearch()" onkeypress="if(event.key==='Enter')handleSearchClick()">
-                <button id="searchButton" onclick="handleSearchClick()">
+            <form action="javascript:void(0);" onsubmit="handleSearchClick()" class="search-bar">
+                <input type="search" id="searchInput" placeholder="단어를 입력하고 검색하세요" oninput="handleLiveSearch()">
+                <button type="submit" id="searchButton">
                     <span class="search-icon">🔍</span>
                 </button>
-            </div>
+            </form>
             <div id="resultPopup" class="result-popup"></div>
         </div>
 
@@ -257,9 +232,9 @@
         </section>
     </div>
 
-    <div class="overlay" id="overlay" onclick="if(event.target===this)closeDetail()">
+    <div class="overlay" id="overlay">
         <div class="detail-card">
-            <button class="close-btn" onclick="closeDetail()">&times;</button>
+            <button class="close-btn" onclick="closeDetail()" aria-label="닫기">&times;</button>
             <div id="detailWord"></div>
             <div id="detailMean"></div>
         </div>
@@ -290,32 +265,20 @@
         function handleLiveSearch() {
             const query = document.getElementById('searchInput').value.trim();
             const popup = document.getElementById('resultPopup');
-
-            if (!query) {
-                popup.style.display = 'none';
-                return;
-            }
-
+            if (!query) { popup.style.display = 'none'; return; }
             const filtered = allSlangs.filter(item => item.word.includes(query));
-
             if (filtered.length > 0) {
-                popup.innerHTML = filtered.map(item => `
-                    <div class="result-item" onclick="openDetail('${item.word}', '${item.mean}')">
-                        ${item.word}
-                    </div>
-                `).join('');
+                popup.innerHTML = filtered.map(item => `<div class="result-item" onclick="openDetail('${item.word.replace(/'/g, "\\'")}', '${item.mean.replace(/'/g, "\\'")}')">${item.word}</div>`).join('');
                 popup.style.display = 'block';
-            } else {
-                popup.style.display = 'none';
-            }
+            } else { popup.style.display = 'none'; }
         }
 
         function handleSearchClick() {
             const query = document.getElementById('searchInput').value.trim();
+            if(!query) return;
             const match = allSlangs.find(item => item.word === query);
             if(match) openDetail(match.word, match.mean);
-            else if(query) openDetail(query, "A사전에 아직 등록되지 않은 단어입니다.");
-            // 키보드 숨기기 처리 (모바일 편의성)
+            else openDetail(query, "A사전에 아직 등록되지 않은 단어입니다.");
             document.getElementById('searchInput').blur();
         }
 
@@ -338,10 +301,16 @@
             document.getElementById('resultPopup').style.display = 'none';
         }
 
+        // 종료 버튼 함수
         function closeDetail() {
             document.getElementById('overlay').classList.remove('show');
             document.getElementById('searchInput').value = '';
         }
+
+        // 배경 클릭 시 닫기 기능 추가
+        document.getElementById('overlay').addEventListener('click', function(e) {
+            if (e.target === this) closeDetail();
+        });
 
         init();
     </script>
